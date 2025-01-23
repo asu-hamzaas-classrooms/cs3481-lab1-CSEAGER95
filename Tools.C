@@ -227,19 +227,26 @@ uint64_t Tools::clearBits(uint64_t source, int32_t low, int32_t high)
  * RESTRICTIONS: You can only use an if statement to determine whether
  *               the low and high values are valid. 
  */
+
+//tests for this
 uint64_t Tools::copyBits(uint64_t source, uint64_t dest, 
                          int32_t srclow, int32_t dstlow, int32_t length)
 {
+  if (srclow < 0 || dstlow < 0 || length <= 0 || 
+    srclow + length > 64 || dstlow + length > 64) {
+    return dest;
+  }
   uint64_t asButter = 0xffffffffffffffff;
   if (srclow < 0x3f){
-  asButter = asButter << (64 - length);
-  asButter = asButter >> (64 - srclow - length);
+  asButter = asButter << length;
+  asButter = ~asButter;
+  asButter = asButter << srclow;
   }
   source = asButter & source;
   source = source >> srclow;
   source = source << dstlow;
-  dest = clearBits(dest, dstlow, dstlow + length);
-  dest = source & dest;
+  dest = clearBits(dest, dstlow, dstlow + length - 1);
+  dest = source | dest;
   return dest;
 }
 
@@ -263,9 +270,16 @@ uint64_t Tools::copyBits(uint64_t source, uint64_t dest,
  *               code to return source if bytenum is out of range and
  *               the source otherwise.
  */
+
 uint64_t Tools::setByte(uint64_t source, int32_t byteNum)
 {
-  return setBits(source, byteNum-1, byteNum);
+  if(byteNum > 7 || byteNum < 0){
+    return source;
+  }
+  uint64_t slap = 0x00000000000000ff;
+  slap <<= (byteNum * 8);
+  source = source | slap;
+  return source;
 }
 
 
@@ -360,4 +374,3 @@ bool Tools::subOverflow(uint64_t op1, uint64_t op2)
     uint64_t result = op2 - op1;
     return (sign(op1) != sign(op2)) && (sign(op2) != sign(result));
 }
-

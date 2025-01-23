@@ -38,6 +38,8 @@ static int clearBitsTests();
 static int signTests();
 static int addOverflowTests();
 static int subOverflowTests();
+static int setByteTests();
+static int copyBitsTest();
 
 /* code for parsing the command line arguments */
 static void parseArgs(int argc, char * argv[]);
@@ -59,7 +61,7 @@ static void usage(char * prog);
 */
 int main(int argc, char * argv[])
 {
-   int numFuns = 14;
+   int numFuns = 10;
    int funsPassed = 0;
    std::string check[] = { "\x1B[31m fail \x1B[0m", "\x1B[32m pass \x1B[0m"};
 
@@ -96,6 +98,14 @@ int main(int argc, char * argv[])
 
    pass = subOverflowTests();
    std::cout << "subOverflow tests:" << check[pass] << "\n";
+   funsPassed += pass;
+
+   pass = setByteTests();
+   std::cout << "setByte tests:" << check[pass] << "\n";
+   funsPassed += pass;
+
+   pass = copyBitsTest();
+   std::cout << "copyBits tests:" << check[pass] << "\n";
    funsPassed += pass;
 
    std::cout << "\n" << std::dec << funsPassed << " functions out of a total of " << numFuns
@@ -364,5 +374,22 @@ int signTests()
    pass &= myAssert(Tools::sign(0x0000000000000000), 0);
    pass &= myAssert(Tools::sign(0x1111111111111111), 0);
    pass &= myAssert(Tools::sign(0xffffffffffffffff), 1);
+   return pass;
+}
+
+int setByteTests()
+{
+   int pass;
+   pass = myAssert(Tools::setByte(0x1122334455667788, 0), 0x11223344556677ff);
+   pass &= myAssert(Tools::setByte(0x1122334455667788, 1), 0x112233445566ff88);
+   pass &= myAssert(Tools::setByte(0x1122334455667788, 8), 0x1122334455667788);
+   return pass;
+}
+
+int copyBitsTest()
+{
+   int pass;
+   pass = myAssert(Tools::copyBits(0x1122334455667788, 0x8877665544332211, 0, 0, 8), 0x8877665544332288);
+   pass &= myAssert(Tools::copyBits(0x1122334455667788, 0x8877665544332211, 0, 8, 8), 0x8877665544338811);
    return pass;
 }
